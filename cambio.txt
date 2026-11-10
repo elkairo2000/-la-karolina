@@ -1,0 +1,15 @@
+LA KAROLINA - CONTROL DE CAMBIO
+
+Moneda base: USD
+Moneda local: CUP
+
+FUNCIONES:
+- Registrar la tasa diaria USD/CUP.
+- Guardar la fecha de cada actualización.
+- Consultar tasas anteriores.
+- Calcular equivalencias entre USD y CUP.
+- Convertir costos de mercancía.
+- Calcular ganancias teniendo en cuenta la moneda.
+
+IMPORTANTE:
+La tasa será introducida manualmente por el usuario.
