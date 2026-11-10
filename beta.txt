@@ -1,0 +1,24 @@
+LA KAROLINA
+VERSION BETA 1.0
+
+OBJETIVO:
+Controlar y hacer crecer el negocio.
+
+MODULOS:
+1. Inventario
+2. Estantes
+3. Compras
+4. Ventas
+5. Gastos
+6. Capital
+7. Tasa de cambio USD/CUP
+8. Alertas de productos bajos
+9. Estadisticas y graficos
+
+DISTRIBUCION DE GANANCIAS:
+70% Reinversion
+20% Reserva
+10% Ganancia disponible
+
+ALMACENAMIENTO:
+Datos guardados en el iPhone.
