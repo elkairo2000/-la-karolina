@@ -69,7 +69,12 @@ nav button{margin:0}
 </style>
 </head>
 <body>
-
+<div style="margin:15px 0;padding:15px;background:#1c293b;border-radius:12px;color:white">
+  <h3>💾 RESPALDO DE LA KAROLINA</h3>
+  <button onclick="exportarRespaldo()">Crear copia de seguridad</button>
+  <br><br>
+  <input type="file" accept=".json,application/json" onchange="leerRespaldo(event)">
+</div>
 <header>
 <h1>LA KAROLINA</h1>
 <div>Control inteligente de tu negocio</div>
@@ -391,6 +396,22 @@ function importarRespaldo(datos){
   render();
   alert("Respaldo recuperado correctamente");
 }
-</script>
+</script>function leerRespaldo(event){
+  const archivo = event.target.files[0];
+  if(!archivo) return;
+
+  const lector = new FileReader();
+
+  lector.onload = function(){
+    try{
+      const datos = JSON.parse(lector.result);
+      importarRespaldo(datos);
+    }catch(error){
+      alert("No se pudo leer el respaldo");
+    }
+  };
+
+  lector.readAsText(archivo);
+}
 </body>
 </html>
