@@ -1,0 +1,230 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LA KAROLINA BETA 2.0</title>
+
+<style>
+* {
+box-sizing: border-box;
+}
+
+body {
+margin: 0;
+font-family: Arial, sans-serif;
+background: #f2f5f3;
+color: #20352b;
+}
+
+header {
+background: #173d32;
+color: white;
+padding: 22px;
+text-align: center;
+}
+
+header h1 {
+margin: 0;
+}
+
+nav {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 10px;
+padding: 15px;
+}
+
+button {
+border: none;
+border-radius: 10px;
+padding: 14px;
+background: #245943;
+color: white;
+font-weight: bold;
+font-size: 15px;
+}
+
+section {
+background: white;
+margin: 12px;
+padding: 16px;
+border-radius: 12px;
+}
+
+input {
+width: 100%;
+padding: 13px;
+margin: 7px 0;
+border: 1px solid #ccc;
+border-radius: 8px;
+font-size: 16px;
+}
+
+.item {
+padding: 13px;
+border-bottom: 1px solid #ddd;
+}
+
+.warning {
+color: #b45309;
+font-weight: bold;
+}
+
+[hidden] {
+display: none !important;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>LA KAROLINA</h1>
+<p>CONTROL DE NEGOCIO · BETA 2.0</p>
+</header>
+
+<nav>
+<button onclick="show('inventario')">📦 INVENTARIO</button>
+<button onclick="show('agregar')">➕ AGREGAR PRODUCTO</button>
+<button onclick="show('compras')">🛒 COMPRAS</button>
+<button onclick="show('ventas')">💰 VENTAS</button>
+<button onclick="show('capital')">🏦 CAPITAL</button>
+</nav>
+
+<section id="inventario">
+<h2>📦 Inventario actual</h2>
+<input id="buscar" placeholder="Buscar producto..." oninput="render()">
+<div id="listaProductos"></div>
+</section>
+
+<section id="agregar" hidden>
+<h2>➕ Nuevo producto</h2>
+<input id="nombre" placeholder="Nombre del producto">
+<input id="estante" placeholder="Estante">
+<input id="cantidad" type="number" min="0" placeholder="Cantidad">
+<input id="costo" type="number" min="0" step="0.01" placeholder="Costo">
+<button onclick="addProduct()">GUARDAR PRODUCTO</button>
+</section>
+
+<section id="compras" hidden>
+<h2>🛒 Compras</h2>
+<p>Próximamente.</p>
+</section>
+
+<section id="ventas" hidden>
+<h2>💰 Ventas</h2>
+<p>Próximamente.</p>
+</section>
+
+<section id="capital" hidden>
+<h2>🏦 Capital</h2>
+<p>Próximamente.</p>
+</section>
+
+
+const STORAGE_KEY = "laKarolinaBeta2";
+
+let products = [];
+
+function load() {
+  try {
+    products = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch (error) {
+    products = [];
+  }
+}
+
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+}
+
+function show(id) {
+  document.querySelectorAll("section").forEach(section => {
+    section.hidden = true;
+  });
+
+  document.getElementById(id).hidden = false;
+
+  if (id === "inventario") {
+    render();
+  }
+}
+
+function addProduct() {
+  const name = document.getElementById("nombre").value.trim();
+  const shelf = document.getElementById("estante").value.trim();
+  const qty = Number(document.getElementById("cantidad").value);
+  const cost = Number(document.getElementById("costo").value);
+
+  if (!name || document.getElementById("cantidad").value === "" ||
+      document.getElementById("costo").value === "" ||
+      !Number.isInteger(qty) || qty < 0 || !Number.isFinite(cost) || cost < 0) {
+    alert("Completa correctamente los datos");
+    return;
+  }
+
+  products.push({
+    id: Date.now() + Math.random(),
+    name,
+    shelf,
+    qty,
+    cost
+  });
+
+  save();
+
+  document.getElementById("nombre").value = "";
+  document.getElementById("estante").value = "";
+  document.getElementById("cantidad").value = "";
+  document.getElementById("costo").value = "";
+
+  render();
+  show("inventario");
+
+  alert("Producto registrado correctamente");
+}
+
+function render() {
+  const list = document.getElementById("listaProductos");
+  const search = document.getElementById("buscar").value.toLowerCase();
+
+  list.innerHTML = "";
+
+  const filtered = products.filter(product =>
+    product.name.toLowerCase().includes(search)
+  );
+
+  if (filtered.length === 0) {
+    list.textContent = products.length === 0
+      ? "Todavía no hay productos registrados."
+      : "No se encontraron productos.";
+    return;
+  }
+
+  filtered.forEach(product => {
+    const div = document.createElement("div");
+    div.className = "item";
+
+    div.textContent =
+      product.name + " | Estante: " +
+      (product.shelf || "Sin asignar") +
+      " | Cantidad: " + product.qty +
+      " | Costo: " + product.cost;
+
+    if (product.qty <= 2) {
+      div.classList.add("warning");
+      div.textContent += " ⚠️ EXISTENCIAS BAJAS";
+    }
+
+    list.appendChild(div);
+  });
+}
+
+load();
+render();
+
+
+</body>
+</html>
