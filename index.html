@@ -1,0 +1,119 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#101827">
+<title>LA KAROLINA</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif;padding:20px}
+header{text-align:center;padding:20px 0}
+h1{color:#e9bd55;font-size:30px;margin:5px}
+.sub{color:#aab4c4}
+.card{background:#1c293b;padding:18px;border-radius:15px;margin:15px 0}
+h2{color:#e9bd55;font-size:19px}
+input,select,button{width:100%;padding:13px;margin:7px 0;border:0;border-radius:9px;font-size:15px}
+input,select{background:#edf1f5;color:#172033}
+button{background:#d5a83e;color:#101827;font-weight:bold}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#26364b;padding:15px;border-radius:12px}
+.stat strong{display:block;font-size:23px;color:#e9bd55;margin-top:8px}
+.product{border-bottom:1px solid #40516a;padding:12px 0}
+small{color:#bdc7d5}
+</style>
+</head>
+<body>
+<header>
+<h1>LA KAROLINA</h1>
+<div class="sub">Control inteligente de tu negocio</div>
+</header>
+
+<div class="stats">
+<div class="stat">Productos<strong id="total">0</strong></div>
+<div class="stat">Unidades<strong id="units">0</strong></div>
+</div>
+
+<div class="card">
+<h2>➕ Registrar producto</h2>
+<input id="name" placeholder="Nombre del producto">
+<select id="shelf">
+<option>Estante 1</option>
+<option>Estante 2</option>
+<option>Estante 3</option>
+</select>
+<input id="qty" type="number" min="0" placeholder="Cantidad">
+<input id="cost" type="number" min="0" step="0.01" placeholder="Costo por unidad">
+<select id="currency">
+<option>USD</option>
+<option>CUP</option>
+</select>
+<button onclick="addProduct()">GUARDAR PRODUCTO</button>
+</div>
+
+<div class="card">
+<h2>📦 Mi inventario</h2>
+<div id="inventory">Todavía no hay productos registrados.</div>
+</div>
+
+<script>
+let products=JSON.parse(localStorage.getItem("karolina_products")||"[]");
+
+function save(){
+localStorage.setItem("karolina_products",JSON.stringify(products));
+render();
+}
+
+function addProduct(){
+let name=document.getElementById("name").value.trim();
+let qty=Number(document.getElementById("qty").value);
+let cost=Number(document.getElementById("cost").value);
+
+if(!name||document.getElementById("qty").value===""||qty<0||document.getElementById("cost").value===""||cost<0){
+alert("Completa los datos correctamente");
+return;
+}
+
+products.push({
+name,
+shelf:document.getElementById("shelf").value,
+qty,
+cost,
+currency:document.getElementById("currency").value
+});
+
+save();
+document.getElementById("name").value="";
+document.getElementById("qty").value="";
+document.getElementById("cost").value="";
+alert("Producto guardado");
+}
+
+function render(){
+document.getElementById("total").textContent=products.length;
+document.getElementById("units").textContent=products.reduce((s,p)=>s+p.qty,0);
+let box=document.getElementById("inventory");
+
+if(!products.length){
+box.textContent="Todavía no hay productos registrados.";
+return;
+}
+
+box.innerHTML="";
+products.forEach((p,i)=>{
+let div=document.createElement("div");
+div.className="product";
+let title=document.createElement("strong");
+title.textContent=p.name;
+let detail=document.createElement("small");
+detail.textContent=p.shelf+" · "+p.qty+" unidades · "+p.cost+" "+p.currency;
+div.append(title,document.createElement("br"),detail);
+box.appendChild(div);
+});
+}
+
+render();
+</script>
+</body>
+</html>
