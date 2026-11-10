@@ -316,9 +316,10 @@ option.value=products.indexOf(p);
 option.textContent=p.name+" ("+p.qty+" disponibles)";
 saleProduct.appendChild(option);
 });
-if(products.some(p=>p.name===selected)){
+if(products[selected]){
 saleProduct.value=selected;
 }
+
 }
 inventory.innerHTML="";
 products.forEach(p=>{
