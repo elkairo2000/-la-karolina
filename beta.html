@@ -142,16 +142,13 @@ function save() {
 
 function show(id) {
   document.querySelectorAll("section").forEach(section => {
-    section.hidden = true;
+    section.hidden = section.id !== id;
   });
-
-  document.getElementById(id).hidden = false;
 
   if (id === "inventario") {
     render();
   }
 }
-
 function addProduct() {
   const name = document.getElementById("nombre").value.trim();
   const shelf = document.getElementById("estante").value.trim();
