@@ -288,7 +288,17 @@ money(sales.filter(s=>s.currency===c).reduce((a,s)=>a+s.revenue,0),c)
 document.getElementById("profit").textContent=currencies.map(c=>
 money(totals(c).net,c)
 ).join(" / ")||"0";
+document.getElementById("capitalPanel").textContent =
+currencies.map(c=>money(Math.max(0,totals(c).net)*0.7,c)).join(" / ") || "0";
 
+document.getElementById("gananciasPanel").textContent =
+currencies.map(c=>money(totals(c).net,c)).join(" / ") || "0";
+
+document.getElementById("inventarioPanel").textContent =
+products.reduce((a,p)=>a+p.qty,0)+" unidades";
+
+document.getElementById("alertasPanel").textContent =
+products.filter(p=>p.qty<=2).length+" productos bajos";
 let inventory=document.getElementById("inventory");
 inventory.innerHTML="";
 products.forEach(p=>{
