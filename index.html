@@ -305,6 +305,20 @@ products.reduce((a,p)=>a+p.qty,0)+" unidades";
 document.getElementById("alertasPanel").textContent =
 products.filter(p=>p.qty<=2).length+" productos bajos";
 let inventory=document.getElementById("inventory");
+let saleProduct=document.getElementById("saleProduct");
+if(saleProduct){
+let selected=saleProduct.value;
+saleProduct.innerHTML="";
+products.forEach(p=>{
+let option=document.createElement("option");
+option.value=p.name;
+option.textContent=p.name+" ("+p.qty+" disponibles)";
+saleProduct.appendChild(option);
+});
+if(products.some(p=>p.name===selected)){
+saleProduct.value=selected;
+}
+}
 inventory.innerHTML="";
 products.forEach(p=>{
 let div=document.createElement("div");
