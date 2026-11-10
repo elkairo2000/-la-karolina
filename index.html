@@ -3,40 +3,43 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#101827">
 <title>LA KAROLINA</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif;padding:20px}
-header{text-align:center;padding:20px 0}
-h1{color:#e9bd55;font-size:30px;margin:5px}
-.sub{color:#aab4c4}
-.card{background:#1c293b;padding:18px;border-radius:15px;margin:15px 0}
+body{margin:0;background:#101827;color:white;font-family:Arial;padding:16px}
+header{text-align:center;padding:20px}
+h1{color:#e9bd55;font-size:30px}
 h2{color:#e9bd55;font-size:19px}
+.card{background:#1c293b;padding:17px;border-radius:15px;margin:15px 0}
 input,select,button{width:100%;padding:13px;margin:7px 0;border:0;border-radius:9px;font-size:15px}
 input,select{background:#edf1f5;color:#172033}
 button{background:#d5a83e;color:#101827;font-weight:bold}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat{background:#26364b;padding:15px;border-radius:12px}
-.stat strong{display:block;font-size:23px;color:#e9bd55;margin-top:8px}
+.stat{background:#26364b;padding:14px;border-radius:12px;font-size:13px}
+.stat strong{display:block;font-size:21px;color:#e9bd55;margin-top:8px}
 .product{border-bottom:1px solid #40516a;padding:12px 0}
 small{color:#bdc7d5}
+.gold{color:#e9bd55}
 </style>
 </head>
 <body>
+
 <header>
 <h1>LA KAROLINA</h1>
-<div class="sub">Control inteligente de tu negocio</div>
+<div>Control inteligente de tu negocio</div>
 </header>
 
 <div class="stats">
 <div class="stat">Productos<strong id="total">0</strong></div>
 <div class="stat">Unidades<strong id="units">0</strong></div>
+<div class="stat">Ventas acumuladas<strong id="sales">0</strong></div>
+<div class="stat">Ganancia acumulada<strong id="profit">0</strong></div>
 </div>
 
 <div class="card">
-<h2>➕ Registrar producto</h2>
+<h2>📦 Registrar producto</h2>
 <input id="name" placeholder="Nombre del producto">
 <select id="shelf">
 <option>Estante 1</option>
@@ -53,64 +56,179 @@ small{color:#bdc7d5}
 </div>
 
 <div class="card">
+<h2>💰 Registrar venta</h2>
+<select id="saleProduct">
+<option value="">Selecciona un producto</option>
+</select>
+<input id="saleQty" type="number" min="1" placeholder="Cantidad vendida">
+<input id="salePrice" type="number" min="0" step="0.01" placeholder="Precio de venta por unidad">
+<button onclick="addSale()">REGISTRAR VENTA</button>
+<small>El precio de venta debe estar en la misma moneda que el costo registrado.</small>
+</div>
+
+<div class="card">
+<h2>📊 Distribución de ganancias</h2>
+<div class="stats">
+<div class="stat">70% Reinversión<strong id="reinvest">0</strong></div>
+<div class="stat">20% Reserva<strong id="reserve">0</strong></div>
+<div class="stat">10% Disponible<strong id="available">0</strong></div>
+</div>
+<small>Distribución calculada sobre la ganancia neta acumulada.</small>
+</div>
+
+<div class="card">
 <h2>📦 Mi inventario</h2>
-<div id="inventory">Todavía no hay productos registrados.</div>
+<div id="inventory"></div>
+</div>
+
+<div class="card">
+<h2>🧾 Historial de ventas</h2>
+<div id="history">Todavía no hay ventas.</div>
 </div>
 
 <script>
 let products=JSON.parse(localStorage.getItem("karolina_products")||"[]");
+let sales=JSON.parse(localStorage.getItem("karolina_sales")||"[]");
 
-function save(){
-localStorage.setItem("karolina_products",JSON.stringify(products));
-render();
+function money(n,c){
+return Number(n).toLocaleString("es",{maximumFractionDigits:2})+" "+c;
 }
 
 function addProduct(){
 let name=document.getElementById("name").value.trim();
-let qty=Number(document.getElementById("qty").value);
-let cost=Number(document.getElementById("cost").value);
+let q=document.getElementById("qty").value;
+let c=document.getElementById("cost").value;
 
-if(!name||document.getElementById("qty").value===""||qty<0||document.getElementById("cost").value===""||cost<0){
-alert("Completa los datos correctamente");
+if(!name||q===""||c===""||Number(q)<0||Number(c)<0){
+alert("Completa correctamente los datos");
 return;
 }
 
 products.push({
-name,
+name:name,
 shelf:document.getElementById("shelf").value,
-qty,
-cost,
+qty:Number(q),
+cost:Number(c),
 currency:document.getElementById("currency").value
 });
 
-save();
 document.getElementById("name").value="";
 document.getElementById("qty").value="";
 document.getElementById("cost").value="";
+save();
 alert("Producto guardado");
+}
+
+function addSale(){
+let index=document.getElementById("saleProduct").value;
+let q=Number(document.getElementById("saleQty").value);
+let price=Number(document.getElementById("salePrice").value);
+
+if(index===""||!Number.isInteger(q)||q<=0||document.getElementById("salePrice").value===""||price<0){
+alert("Completa correctamente la venta");
+return;
+}
+
+let p=products[Number(index)];
+
+if(q>p.qty){
+alert("No tienes suficiente mercancía en inventario");
+return;
+}
+
+let revenue=q*price;
+let cost=q*p.cost;
+let gain=revenue-cost;
+
+if(gain<0){
+if(!confirm("Esta venta genera una pérdida. ¿Deseas continuar?"))return;
+}
+
+p.qty-=q;
+
+sales.push({
+name:p.name,
+qty:q,
+revenue:revenue,
+cost:cost,
+gain:gain,
+currency:p.currency,
+date:new Date().toLocaleString()
+});
+
+document.getElementById("saleQty").value="";
+document.getElementById("salePrice").value="";
+save();
+alert("Venta registrada correctamente");
+}
+
+function save(){
+localStorage.setItem("karolina_products",JSON.stringify(products));
+localStorage.setItem("karolina_sales",JSON.stringify(sales));
+render();
 }
 
 function render(){
 document.getElementById("total").textContent=products.length;
 document.getElementById("units").textContent=products.reduce((s,p)=>s+p.qty,0);
-let box=document.getElementById("inventory");
 
-if(!products.length){
-box.textContent="Todavía no hay productos registrados.";
-return;
-}
+let currencies=[...new Set(sales.map(s=>s.currency))];
 
-box.innerHTML="";
-products.forEach((p,i)=>{
+document.getElementById("sales").textContent=currencies.length?
+currencies.map(c=>money(sales.filter(s=>s.currency===c).reduce((a,s)=>a+s.revenue,0),c)).join(" / "):"0";
+
+document.getElementById("profit").textContent=currencies.length?
+currencies.map(c=>money(sales.filter(s=>s.currency===c).reduce((a,s)=>a+s.gain,0),c)).join(" / "):"0";
+
+let inventory=document.getElementById("inventory");
+inventory.innerHTML="";
+
+products.forEach(p=>{
 let div=document.createElement("div");
 div.className="product";
-let title=document.createElement("strong");
-title.textContent=p.name;
-let detail=document.createElement("small");
-detail.textContent=p.shelf+" · "+p.qty+" unidades · "+p.cost+" "+p.currency;
-div.append(title,document.createElement("br"),detail);
-box.appendChild(div);
+div.textContent=p.name+" — "+p.shelf+" — "+p.qty+" unidades — Costo: "+money(p.cost,p.currency);
+inventory.appendChild(div);
 });
+
+let select=document.getElementById("saleProduct");
+let previous=select.value;
+select.innerHTML='<option value="">Selecciona un producto</option>';
+
+products.forEach((p,i)=>{
+let option=document.createElement("option");
+option.value=i;
+option.textContent=p.name+" ("+p.qty+" disponibles)";
+select.appendChild(option);
+});
+
+if(previous!=="")select.value=previous;
+
+let history=document.getElementById("history");
+history.innerHTML="";
+
+if(!sales.length){
+history.textContent="Todavía no hay ventas.";
+}else{
+sales.slice().reverse().forEach(s=>{
+let div=document.createElement("div");
+div.className="product";
+div.textContent=s.date+" — "+s.name+" — "+s.qty+" unidades — Venta: "+money(s.revenue,s.currency)+" — Ganancia: "+money(s.gain,s.currency);
+history.appendChild(div);
+});
+}
+
+currencies.forEach(c=>{
+let total=sales.filter(s=>s.currency===c).reduce((a,s)=>a+s.gain,0);
+document.getElementById("reinvest").textContent=currencies.length===1?money(total*.7,c):"Ver "+c;
+document.getElementById("reserve").textContent=currencies.length===1?money(total*.2,c):"Ver "+c;
+document.getElementById("available").textContent=currencies.length===1?money(total*.1,c):"Ver "+c;
+});
+
+if(!currencies.length){
+document.getElementById("reinvest").textContent="0";
+document.getElementById("reserve").textContent="0";
+document.getElementById("available").textContent="0";
+}
 }
 
 render();
