@@ -9,19 +9,21 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101827;color:white;font-family:Arial;padding:16px}
-header{text-align:center;padding:20px}
+header{text-align:center;padding:15px}
 h1{color:#e9bd55;font-size:30px}
 h2{color:#e9bd55;font-size:19px}
-.card{background:#1c293b;padding:17px;border-radius:15px;margin:15px 0}
-input,select,button{width:100%;padding:13px;margin:7px 0;border:0;border-radius:9px;font-size:15px}
+.card{background:#1c293b;padding:16px;border-radius:14px;margin:14px 0}
+input,select,button{width:100%;padding:13px;margin:6px 0;border:0;border-radius:9px;font-size:15px}
 input,select{background:#edf1f5;color:#172033}
 button{background:#d5a83e;color:#101827;font-weight:bold}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.stat{background:#26364b;padding:14px;border-radius:12px;font-size:13px}
-.stat strong{display:block;font-size:21px;color:#e9bd55;margin-top:8px}
-.product{border-bottom:1px solid #40516a;padding:12px 0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.stat{background:#26364b;padding:13px;border-radius:10px;font-size:13px}
+.stat strong{display:block;font-size:19px;color:#e9bd55;margin-top:7px}
+.item{border-bottom:1px solid #40516a;padding:12px 0;font-size:14px}
 small{color:#bdc7d5}
-.gold{color:#e9bd55}
+.warning{color:#ffbb67}
+nav{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:10px 0}
+nav button{margin:0}
 </style>
 </head>
 <body>
@@ -29,16 +31,26 @@ small{color:#bdc7d5}
 <header>
 <h1>LA KAROLINA</h1>
 <div>Control inteligente de tu negocio</div>
+<small>Administración de inventario y capital</small>
 </header>
 
 <div class="stats">
 <div class="stat">Productos<strong id="total">0</strong></div>
 <div class="stat">Unidades<strong id="units">0</strong></div>
-<div class="stat">Ventas acumuladas<strong id="sales">0</strong></div>
-<div class="stat">Ganancia acumulada<strong id="profit">0</strong></div>
+<div class="stat">Ventas<strong id="sales">0</strong></div>
+<div class="stat">Beneficio neto<strong id="profit">0</strong></div>
 </div>
 
-<div class="card">
+<nav>
+<button onclick="show('productos')">📦 Productos</button>
+<button onclick="show('compras')">🛒 Compras</button>
+<button onclick="show('ventas')">💰 Ventas</button>
+<button onclick="show('gastos')">🧾 Gastos</button>
+<button onclick="show('capital')">🏦 Capital</button>
+<button onclick="show('historial')">📊 Historial</button>
+</nav>
+
+<section id="productos" class="card">
 <h2>📦 Registrar producto</h2>
 <input id="name" placeholder="Nombre del producto">
 <select id="shelf">
@@ -46,189 +58,245 @@ small{color:#bdc7d5}
 <option>Estante 2</option>
 <option>Estante 3</option>
 </select>
-<input id="qty" type="number" min="0" placeholder="Cantidad">
+<input id="qty" type="number" min="0" placeholder="Cantidad inicial">
 <input id="cost" type="number" min="0" step="0.01" placeholder="Costo por unidad">
 <select id="currency">
 <option>USD</option>
 <option>CUP</option>
 </select>
 <button onclick="addProduct()">GUARDAR PRODUCTO</button>
-</div>
+<h2>Inventario actual</h2>
+<div id="inventory"></div>
+</section>
 
-<div class="card">
+<section id="compras" class="card" hidden>
+<h2>🛒 Registrar compra</h2>
+<select id="purchaseProduct"></select>
+<input id="purchaseQty" type="number" min="1" placeholder="Unidades compradas">
+<input id="purchaseCost" type="number" min="0" step="0.01" placeholder="Costo por unidad">
+<button onclick="addPurchase()">REGISTRAR COMPRA</button>
+<small>El costo se registra en la moneda original del producto. Se actualizará el costo promedio.</small>
+</section>
+
+<section id="ventas" class="card" hidden>
 <h2>💰 Registrar venta</h2>
-<select id="saleProduct">
-<option value="">Selecciona un producto</option>
-</select>
+<select id="saleProduct"></select>
 <input id="saleQty" type="number" min="1" placeholder="Cantidad vendida">
 <input id="salePrice" type="number" min="0" step="0.01" placeholder="Precio de venta por unidad">
 <button onclick="addSale()">REGISTRAR VENTA</button>
-<small>El precio de venta debe estar en la misma moneda que el costo registrado.</small>
-</div>
+</section>
 
-<div class="card">
-<h2>📊 Distribución de ganancias</h2>
+<section id="gastos" class="card" hidden>
+<h2>🧾 Registrar gasto</h2>
+<input id="expenseName" placeholder="Descripción del gasto">
+<input id="expenseAmount" type="number" min="0" step="0.01" placeholder="Importe">
+<select id="expenseCurrency">
+<option>USD</option>
+<option>CUP</option>
+</select>
+<button onclick="addExpense()">GUARDAR GASTO</button>
+</section>
+
+<section id="capital" class="card" hidden>
+<h2>🏦 Capital y ganancias</h2>
 <div class="stats">
-<div class="stat">70% Reinversión<strong id="reinvest">0</strong></div>
-<div class="stat">20% Reserva<strong id="reserve">0</strong></div>
-<div class="stat">10% Disponible<strong id="available">0</strong></div>
+<div class="stat">Reinversión 70%<strong id="reinvest">0</strong></div>
+<div class="stat">Reserva 20%<strong id="reserve">0</strong></div>
+<div class="stat">Disponible 10%<strong id="available">0</strong></div>
+<div class="stat">Gastos<strong id="expensesTotal">0</strong></div>
 </div>
-<small>Distribución calculada sobre la ganancia neta acumulada.</small>
-</div>
+<p><small>Distribución calculada sobre el beneficio neto de cada moneda. No mezcla CUP con USD.</small></p>
+</section>
 
-<div class="card">
-<h2>📦 Mi inventario</h2>
-<div id="inventory"></div>
-</div>
-
-<div class="card">
-<h2>🧾 Historial de ventas</h2>
-<div id="history">Todavía no hay ventas.</div>
-</div>
+<section id="historial" class="card" hidden>
+<h2>📊 Historial de operaciones</h2>
+<div id="history"></div>
+</section>
 
 <script>
 let products=JSON.parse(localStorage.getItem("karolina_products")||"[]");
 let sales=JSON.parse(localStorage.getItem("karolina_sales")||"[]");
+let purchases=JSON.parse(localStorage.getItem("karolina_purchases")||"[]");
+let expenses=JSON.parse(localStorage.getItem("karolina_expenses")||"[]");
+
+function show(id){
+document.querySelectorAll("section").forEach(s=>s.hidden=true);
+document.getElementById(id).hidden=false;
+render();
+}
 
 function money(n,c){
 return Number(n).toLocaleString("es",{maximumFractionDigits:2})+" "+c;
 }
 
+function save(){
+localStorage.setItem("karolina_products",JSON.stringify(products));
+localStorage.setItem("karolina_sales",JSON.stringify(sales));
+localStorage.setItem("karolina_purchases",JSON.stringify(purchases));
+localStorage.setItem("karolina_expenses",JSON.stringify(expenses));
+render();
+}
+
 function addProduct(){
 let name=document.getElementById("name").value.trim();
 let q=document.getElementById("qty").value;
-let c=document.getElementById("cost").value;
-
-if(!name||q===""||c===""||Number(q)<0||Number(c)<0){
-alert("Completa correctamente los datos");
-return;
+let cost=document.getElementById("cost").value;
+if(!name||q===""||cost===""||Number(q)<0||Number(cost)<0){
+alert("Completa todos los datos correctamente");return;
 }
-
 products.push({
 name:name,
 shelf:document.getElementById("shelf").value,
 qty:Number(q),
-cost:Number(c),
+cost:Number(cost),
 currency:document.getElementById("currency").value
 });
-
 document.getElementById("name").value="";
 document.getElementById("qty").value="";
 document.getElementById("cost").value="";
 save();
-alert("Producto guardado");
+alert("Producto registrado");
+}
+
+function addPurchase(){
+let i=document.getElementById("purchaseProduct").value;
+let q=Number(document.getElementById("purchaseQty").value);
+let costValue=document.getElementById("purchaseCost").value;
+let cost=Number(costValue);
+if(i===""||!Number.isInteger(q)||q<=0||costValue===""||cost<0){
+alert("Completa los datos de la compra");return;
+}
+let p=products[Number(i)];
+let oldQty=p.qty;
+let newQty=oldQty+q;
+p.cost=newQty===0?cost:((oldQty*p.cost)+(q*cost))/newQty;
+p.qty=newQty;
+purchases.push({
+name:p.name,qty:q,cost:cost,total:q*cost,
+currency:p.currency,date:new Date().toLocaleString()
+});
+document.getElementById("purchaseQty").value="";
+document.getElementById("purchaseCost").value="";
+save();
+alert("Compra registrada y existencias actualizadas");
 }
 
 function addSale(){
-let index=document.getElementById("saleProduct").value;
+let i=document.getElementById("saleProduct").value;
 let q=Number(document.getElementById("saleQty").value);
-let price=Number(document.getElementById("salePrice").value);
-
-if(index===""||!Number.isInteger(q)||q<=0||document.getElementById("salePrice").value===""||price<0){
-alert("Completa correctamente la venta");
-return;
+let priceValue=document.getElementById("salePrice").value;
+let price=Number(priceValue);
+if(i===""||!Number.isInteger(q)||q<=0||priceValue===""||price<0){
+alert("Completa correctamente la venta");return;
 }
-
-let p=products[Number(index)];
-
-if(q>p.qty){
-alert("No tienes suficiente mercancía en inventario");
-return;
-}
-
+let p=products[Number(i)];
+if(q>p.qty){alert("No hay suficiente mercancía");return;}
 let revenue=q*price;
 let cost=q*p.cost;
-let gain=revenue-cost;
-
-if(gain<0){
-if(!confirm("Esta venta genera una pérdida. ¿Deseas continuar?"))return;
-}
-
 p.qty-=q;
-
 sales.push({
-name:p.name,
-qty:q,
-revenue:revenue,
-cost:cost,
-gain:gain,
-currency:p.currency,
+name:p.name,qty:q,revenue:revenue,cost:cost,
+gain:revenue-cost,currency:p.currency,
 date:new Date().toLocaleString()
 });
-
 document.getElementById("saleQty").value="";
 document.getElementById("salePrice").value="";
 save();
-alert("Venta registrada correctamente");
+alert("Venta registrada");
 }
 
-function save(){
-localStorage.setItem("karolina_products",JSON.stringify(products));
-localStorage.setItem("karolina_sales",JSON.stringify(sales));
-render();
+function addExpense(){
+let name=document.getElementById("expenseName").value.trim();
+let amountValue=document.getElementById("expenseAmount").value;
+let amount=Number(amountValue);
+if(!name||amountValue===""||amount<0){
+alert("Completa los datos del gasto");return;
+}
+expenses.push({
+name:name,amount:amount,
+currency:document.getElementById("expenseCurrency").value,
+date:new Date().toLocaleString()
+});
+document.getElementById("expenseName").value="";
+document.getElementById("expenseAmount").value="";
+save();
+alert("Gasto registrado");
+}
+
+function totals(currency){
+let gain=sales.filter(s=>s.currency===currency).reduce((a,s)=>a+s.gain,0);
+let expense=expenses.filter(e=>e.currency===currency).reduce((a,e)=>a+e.amount,0);
+return {gain:gain,expense:expense,net:gain-expense};
 }
 
 function render(){
 document.getElementById("total").textContent=products.length;
-document.getElementById("units").textContent=products.reduce((s,p)=>s+p.qty,0);
+document.getElementById("units").textContent=products.reduce((a,p)=>a+p.qty,0);
 
-let currencies=[...new Set(sales.map(s=>s.currency))];
+let currencies=[...new Set([
+...products.map(p=>p.currency),
+...sales.map(s=>s.currency),
+...expenses.map(e=>e.currency)
+])];
 
-document.getElementById("sales").textContent=currencies.length?
-currencies.map(c=>money(sales.filter(s=>s.currency===c).reduce((a,s)=>a+s.revenue,0),c)).join(" / "):"0";
+document.getElementById("sales").textContent=currencies.map(c=>
+money(sales.filter(s=>s.currency===c).reduce((a,s)=>a+s.revenue,0),c)
+).join(" / ")||"0";
 
-document.getElementById("profit").textContent=currencies.length?
-currencies.map(c=>money(sales.filter(s=>s.currency===c).reduce((a,s)=>a+s.gain,0),c)).join(" / "):"0";
+document.getElementById("profit").textContent=currencies.map(c=>
+money(totals(c).net,c)
+).join(" / ")||"0";
 
 let inventory=document.getElementById("inventory");
 inventory.innerHTML="";
-
 products.forEach(p=>{
 let div=document.createElement("div");
-div.className="product";
-div.textContent=p.name+" — "+p.shelf+" — "+p.qty+" unidades — Costo: "+money(p.cost,p.currency);
+div.className="item";
+div.textContent=p.name+" | "+p.shelf+" | "+p.qty+" unidades | Costo promedio: "+money(p.cost,p.currency);
+if(p.qty<=2){
+div.className+=" warning";
+div.textContent+=" ⚠️ EXISTENCIAS BAJAS";
+}
 inventory.appendChild(div);
 });
 
-let select=document.getElementById("saleProduct");
+["purchaseProduct","saleProduct"].forEach(id=>{
+let select=document.getElementById(id);
 let previous=select.value;
 select.innerHTML='<option value="">Selecciona un producto</option>';
-
 products.forEach((p,i)=>{
-let option=document.createElement("option");
-option.value=i;
-option.textContent=p.name+" ("+p.qty+" disponibles)";
-select.appendChild(option);
+let o=document.createElement("option");
+o.value=i;
+o.textContent=p.name+" ("+p.qty+" disponibles)";
+select.appendChild(o);
+});
+if(previous!=="")select.value=previous;
 });
 
-if(previous!=="")select.value=previous;
+let r=document.getElementById("reinvest");
+let reserve=document.getElementById("reserve");
+let available=document.getElementById("available");
+let expenseTotal=document.getElementById("expensesTotal");
+r.textContent=currencies.map(c=>money(Math.max(0,totals(c).net)*.7,c)).join(" / ")||"0";
+reserve.textContent=currencies.map(c=>money(Math.max(0,totals(c).net)*.2,c)).join(" / ")||"0";
+available.textContent=currencies.map(c=>money(Math.max(0,totals(c).net)*.1,c)).join(" / ")||"0";
+expenseTotal.textContent=currencies.map(c=>money(totals(c).expense,c)).join(" / ")||"0";
 
 let history=document.getElementById("history");
 history.innerHTML="";
+let all=[
+...purchases.map(x=>({...x,type:"Compra",amount:x.total})),
+...sales.map(x=>({...x,type:"Venta",amount:x.revenue})),
+...expenses.map(x=>({...x,type:"Gasto",amount:x.amount}))
+].reverse();
 
-if(!sales.length){
-history.textContent="Todavía no hay ventas.";
-}else{
-sales.slice().reverse().forEach(s=>{
+if(!all.length){history.textContent="Todavía no hay operaciones.";return;}
+all.forEach(x=>{
 let div=document.createElement("div");
-div.className="product";
-div.textContent=s.date+" — "+s.name+" — "+s.qty+" unidades — Venta: "+money(s.revenue,s.currency)+" — Ganancia: "+money(s.gain,s.currency);
+div.className="item";
+div.textContent=x.date+" | "+x.type+" | "+x.name+" | "+money(x.amount,x.currency);
 history.appendChild(div);
 });
-}
-
-currencies.forEach(c=>{
-let total=sales.filter(s=>s.currency===c).reduce((a,s)=>a+s.gain,0);
-document.getElementById("reinvest").textContent=currencies.length===1?money(total*.7,c):"Ver "+c;
-document.getElementById("reserve").textContent=currencies.length===1?money(total*.2,c):"Ver "+c;
-document.getElementById("available").textContent=currencies.length===1?money(total*.1,c):"Ver "+c;
-});
-
-if(!currencies.length){
-document.getElementById("reinvest").textContent="0";
-document.getElementById("reserve").textContent="0";
-document.getElementById("available").textContent="0";
-}
 }
 
 render();
