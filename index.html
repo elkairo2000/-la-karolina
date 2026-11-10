@@ -312,7 +312,7 @@ let selected=saleProduct.value;
 saleProduct.innerHTML="";
 products.forEach(p=>{
 let option=document.createElement("option");
-option.value=p.name;
+option.value=products.indexOf(p);
 option.textContent=p.name+" ("+p.qty+" disponibles)";
 saleProduct.appendChild(option);
 });
