@@ -351,7 +351,46 @@ history.appendChild(div);
 });
 }
 
-render();
+render();function exportarRespaldo(){
+  const datos = {
+    productos: products,
+    ventas: sales,
+    compras: purchases,
+    gastos: expenses,
+    fecha: new Date().toISOString()
+  };
+
+  const archivo = new Blob(
+    [JSON.stringify(datos,null,2)],
+    {type:"application/json"}
+  );
+
+  const enlace = document.createElement("a");
+  enlace.href = URL.createObjectURL(archivo);
+  enlace.download = "respaldo-la-karolina.json";
+  enlace.click();
+
+  URL.revokeObjectURL(enlace.href);
+}
+
+function importarRespaldo(datos){
+  if(!datos || !Array.isArray(datos.productos) ||
+     !Array.isArray(datos.ventas) ||
+     !Array.isArray(datos.compras) ||
+     !Array.isArray(datos.gastos)){
+    alert("Archivo de respaldo no válido");
+    return;
+  }
+
+  products = datos.productos;
+  sales = datos.ventas;
+  purchases = datos.compras;
+  expenses = datos.gastos;
+
+  save();
+  render();
+  alert("Respaldo recuperado correctamente");
+}
 </script>
 </body>
 </html>
