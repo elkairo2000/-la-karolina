@@ -1,79 +1,68 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LA KAROLINA BETA 2.0</title>
+<title>LA KAROLINA</title>
 
 <style>
-* {
-box-sizing: border-box;
-}
-
 body {
-margin: 0;
-font-family: Arial, sans-serif;
-background: #f2f5f3;
-color: #20352b;
+  font-family: Arial, sans-serif;
+  background: #f2f2f2;
+  margin: 0;
+  padding: 15px;
+  color: #222;
 }
 
 header {
-background: #173d32;
-color: white;
-padding: 22px;
-text-align: center;
-}
-
-header h1 {
-margin: 0;
+  background: #172b4d;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  border-radius: 12px;
 }
 
 nav {
-display: grid;
-grid-template-columns: repeat(2, 1fr);
-gap: 10px;
-padding: 15px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 15px 0;
 }
 
 button {
-border: none;
-border-radius: 10px;
-padding: 14px;
-background: #245943;
-color: white;
-font-weight: bold;
-font-size: 15px;
+  background: #172b4d;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: bold;
 }
 
 section {
-background: white;
-margin: 12px;
-padding: 16px;
-border-radius: 12px;
+  background: white;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 12px;
 }
 
 input {
-width: 100%;
-padding: 13px;
-margin: 7px 0;
-border: 1px solid #ccc;
-border-radius: 8px;
-font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  margin: 7px 0;
+  border: 1px solid #ccc;
+  border-radius: 7px;
 }
 
 .item {
-padding: 13px;
-border-bottom: 1px solid #ddd;
+  padding: 12px;
+  margin: 8px 0;
+  background: #eee;
+  border-radius: 8px;
 }
 
 .warning {
-color: #b45309;
-font-weight: bold;
-}
-
-[hidden] {
-display: none !important;
+  background: #ffe0a3;
 }
 </style>
 </head>
@@ -82,15 +71,15 @@ display: none !important;
 
 <header>
 <h1>LA KAROLINA</h1>
-<p>CONTROL DE NEGOCIO · BETA 2.0</p>
+<p>Control de inventario y capital</p>
 </header>
-
 <nav>
 <button onclick="show('inventario')">📦 INVENTARIO</button>
 <button onclick="show('agregar')">➕ AGREGAR PRODUCTO</button>
 <button onclick="show('compras')">🛒 COMPRAS</button>
 <button onclick="show('ventas')">💰 VENTAS</button>
 <button onclick="show('capital')">🏦 CAPITAL</button>
+<button onclick="show('historial')">📊 HISTORIAL</button>
 </nav>
 
 <section id="inventario">
@@ -98,60 +87,44 @@ display: none !important;
 <input id="buscar" placeholder="Buscar producto..." oninput="render()">
 <div id="listaProductos"></div>
 </section>
-<section id="compras" hidden>
-  <h2>🛒 Compras</h2>
-  <p>Registro de compras próximamente.</p>
-</section>
 
 <section id="agregar" hidden>
-<h2>➕ Nuevo producto</h2>
+<h2>➕ Agregar producto</h2>
 <input id="nombre" placeholder="Nombre del producto">
 <input id="estante" placeholder="Estante">
-<input id="cantidad" type="number" min="0" placeholder="Cantidad">
-<input id="costo" type="number" min="0" step="0.01" placeholder="Costo">
+<input id="cantidad" type="number" placeholder="Cantidad">
+<input id="costo" type="number" placeholder="Costo">
 <button onclick="addProduct()">GUARDAR PRODUCTO</button>
 </section>
 
 <section id="compras" hidden>
 <h2>🛒 Compras</h2>
-<p>Próximamente.</p>
-</section>
-<section id="ventas" hidden>
-  <h2>💰 Ventas</h2>
-  <p>Registro de ventas próximamente.</p>
-</section>
-<section id="capital" hidden>
-  <h2>🏦 Capital</h2>
-  <p>Control del capital del negocio.</p>
-</section>
-<section id="agregar" hidden>
-  <h2>➕ Agregar producto</h2>
-  <input id="nombre" placeholder="Nombre del producto">
-  <input id="estante" placeholder="Estante">
-  <input id="cantidad" type="number" placeholder="Cantidad">
-  <input id="costo" type="number" placeholder="Costo">
-  <button onclick="addProduct()">GUARDAR PRODUCTO</button>
+<p>Registro de compras próximamente.</p>
 </section>
 
 <section id="ventas" hidden>
 <h2>💰 Ventas</h2>
-<p>Próximamente.</p>
+<p>Registro de ventas próximamente.</p>
 </section>
 
 <section id="capital" hidden>
 <h2>🏦 Capital</h2>
-<p>Próximamente.</p>
+<p>Control del capital del negocio.</p>
 </section>
 
+<section id="historial" hidden>
+<h2>📊 Historial</h2>
+<div id="historialLista"></div>
+</section>
+<script>
+let products = [];
 
 const STORAGE_KEY = "laKarolinaBeta2";
-
-let products = [];
 
 function load() {
   try {
     products = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  } catch (error) {
+  } catch (e) {
     products = [];
   }
 }
@@ -161,35 +134,27 @@ function save() {
 }
 
 function show(id) {
-  document.querySelectorAll("section").forEach(section => {
-    section.hidden = section.id !== id;
+  document.querySelectorAll("section").forEach(function(s) {
+    s.hidden = s.id !== id;
   });
 
-  if (id === "inventario") {
-    render();
-  }
+  if (id === "inventario") render();
 }
-function addProduct() {
-  const name = document.getElementById("nombre").value.trim();
-  const shelf = document.getElementById("estante").value.trim();
-  const qty = Number(document.getElementById("cantidad").value);
-  const cost = Number(document.getElementById("costo").value);
 
-  if (!name || document.getElementById("cantidad").value === "" ||
-      document.getElementById("costo").value === "" ||
-      !Number.isInteger(qty) || qty < 0 || !Number.isFinite(cost) || cost < 0) {
+function addProduct() {
+  let name = document.getElementById("nombre").value.trim();
+  let shelf = document.getElementById("estante").value.trim();
+  let qty = Number(document.getElementById("cantidad").value);
+  let cost = Number(document.getElementById("costo").value);
+
+  if (!name || !Number.isInteger(qty) || qty < 0 || !Number.isFinite(cost) || cost < 0 ||
+      document.getElementById("cantidad").value === "" ||
+      document.getElementById("costo").value === "") {
     alert("Completa correctamente los datos");
     return;
   }
 
-  products.push({
-    id: Date.now() + Math.random(),
-    name,
-    shelf,
-    qty,
-    cost
-  });
-
+  products.push({name:name, shelf:shelf, qty:qty, cost:cost});
   save();
 
   document.getElementById("nombre").value = "";
@@ -197,40 +162,32 @@ function addProduct() {
   document.getElementById("cantidad").value = "";
   document.getElementById("costo").value = "";
 
-  render();
   show("inventario");
-
-  alert("Producto registrado correctamente");
+  alert("Producto registrado");
 }
 
 function render() {
-  const list = document.getElementById("listaProductos");
-  const search = document.getElementById("buscar").value.toLowerCase();
+  let list = document.getElementById("listaProductos");
+  let search = document.getElementById("buscar").value.toLowerCase();
 
   list.innerHTML = "";
 
-  const filtered = products.filter(product =>
-    product.name.toLowerCase().includes(search)
-  );
+  let filtered = products.filter(function(p) {
+    return p.name.toLowerCase().includes(search);
+  });
 
   if (filtered.length === 0) {
-    list.textContent = products.length === 0
-      ? "Todavía no hay productos registrados."
-      : "No se encontraron productos.";
+    list.textContent = "Todavía no hay productos registrados.";
     return;
   }
 
-  filtered.forEach(product => {
-    const div = document.createElement("div");
+  filtered.forEach(function(p) {
+    let div = document.createElement("div");
     div.className = "item";
+    div.textContent = p.name + " | Estante: " + (p.shelf || "Sin asignar") +
+      " | Cantidad: " + p.qty + " | Costo: " + p.cost;
 
-    div.textContent =
-      product.name + " | Estante: " +
-      (product.shelf || "Sin asignar") +
-      " | Cantidad: " + product.qty +
-      " | Costo: " + product.cost;
-
-    if (product.qty <= 2) {
+    if (p.qty <= 2) {
       div.classList.add("warning");
       div.textContent += " ⚠️ EXISTENCIAS BAJAS";
     }
@@ -241,7 +198,6 @@ function render() {
 
 load();
 render();
-
-
+</script>
 </body>
 </html>
